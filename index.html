@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>おどりっつ 演舞制作ガント</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style id="css">
+/* VOICE: 実用的で明るい、祭りの進行表
+   IDEA: 楽屋に貼る進行表。紅の帯と色札
+   PICTURE: ガントチャートそのもの（上に小さな題、すぐ表）
+   COLOUR and TYPE: 紅 #A3122A の帯、白地、カテゴリ6色の札／Zen Kaku Gothic New
+   LAYOUT: 紅の帯に題と次の締切、絞り込み、全幅の表、下から編集シート */
+:root{color-scheme:light dark;--bg:light-dark(#fff,#141012);--ink:light-dark(#1b1416,#f3ecee);--sub:light-dark(#6d6266,#b3a8ac);--line:light-dark(#ece6e8,#2c2427);--line2:light-dark(#d9d0d3,#3d3337);--panel:light-dark(#faf6f7,#1d171a);--red:#A3122A;--gold:#E3A21A;--lw:250px}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif;overflow-x:clip}
+button,input,select,textarea{font:inherit;color:inherit}
+.top{background:var(--red);color:#fff;padding:14px max(3vw,14px) 12px;display:flex;flex-wrap:wrap;gap:8px 20px;align-items:end;justify-content:space-between}
+.top h1{margin:0;font-size:clamp(20px,3vw,28px);font-weight:900;line-height:1.1}
+.top small{display:block;font-size:13px;opacity:.85;font-weight:500}
+.next{background:rgba(255,255,255,.14);border-radius:10px;padding:6px 12px;font-size:14px}
+.next b{color:#FFD36B}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px max(3vw,14px);border-bottom:1px solid var(--line2);background:var(--panel)}
+.chip{border:1.5px solid var(--c);background:var(--c);color:#fff;border-radius:999px;padding:5px 12px;font-size:13px;font-weight:700;cursor:pointer;min-height:34px}
+.chip.off{background:transparent;color:var(--sub);border-color:var(--line2)}
+.sp{flex:1}
+.btn{border:1px solid var(--line2);background:var(--bg);border-radius:8px;padding:6px 12px;min-height:38px;cursor:pointer;font-weight:500}
+a.btn{text-decoration:none;display:inline-flex;align-items:center}
+.btn.pri{background:var(--red);border-color:var(--red);color:#fff;font-weight:700}
+.btn:focus-visible,.chip:focus-visible,.lab:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden}
+.seg button{border:0;background:var(--bg);padding:6px 12px;min-height:38px;cursor:pointer}
+.seg button.on{background:var(--ink);color:var(--bg);font-weight:700}
+.board{position:relative;overflow:auto;height:calc(100vh - 150px);min-height:420px}
+.row{display:flex;width:max-content;min-width:100%}
+.lab{position:sticky;left:0;z-index:2;width:var(--lw);flex:none;background:var(--bg);border-right:1px solid var(--line2);border-bottom:1px solid var(--line);padding:3px 10px;cursor:pointer;height:46px;display:flex;flex-direction:column;justify-content:center}
+.lab .n{line-height:1.35;font-size:13.5px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lab .d{line-height:1.35;font-size:11.5px;color:var(--sub);white-space:nowrap}
+.ms .n{color:var(--red);font-weight:700}
+.badge{display:inline-block;font-size:11px;padding:0 6px;border-radius:4px;margin-left:6px;background:var(--line);color:var(--sub)}
+.b-確定{background:#d6f2dc;color:#1d6b33}.b-目標{background:#fde5ea;color:var(--red)}.b-完了{background:#e5e5e5;color:#666}.b-衣装班案{background:#fbe3e5;color:#b0414b}
+.tl{position:relative;flex:none;height:46px;border-bottom:1px solid var(--line);background-image:linear-gradient(to right,var(--line2) 0 1px,transparent 1px);background-size:var(--wk) 100%}
+.day .tl{background-image:linear-gradient(to right,var(--line2) 0 1px,transparent 1px),linear-gradient(to right,var(--line) 0 1px,transparent 1px);background-size:var(--wk) 100%,var(--pd) 100%}
+.head{position:sticky;top:0;z-index:4}
+.head .lab{z-index:5;height:46px;font-weight:700;font-size:13px;background:var(--panel);cursor:default}
+.head .tl{height:46px;background-color:var(--panel)}
+.mo{position:absolute;top:4px;font-size:12.5px;font-weight:700;white-space:nowrap;padding-left:4px;border-left:2px solid var(--ink)}
+.wk{position:absolute;bottom:4px;font-size:11px;color:var(--sub);padding-left:3px}
+.grp .lab{height:28px;white-space:nowrap;overflow:hidden;font-weight:900;font-size:13px;color:#fff;background:var(--c);cursor:default}
+.grp .tl{height:28px;background:color-mix(in srgb,var(--c) 10%,var(--bg))}
+.bk{position:absolute;top:12px;height:22px;border-radius:5px;background:var(--c);color:#fff;font-size:11.5px;font-weight:700;line-height:22px;padding:0 6px;white-space:nowrap;overflow:hidden;cursor:pointer;box-shadow:0 1px 0 rgba(0,0,0,.15)}
+.bk.done{opacity:.4}
+.dm{position:absolute;top:16px;width:14px;height:14px;background:var(--c);transform:rotate(45deg);border:2px solid var(--bg);cursor:pointer}
+.today{position:absolute;top:0;width:2px;background:var(--red);z-index:3;pointer-events:none}
+.today::before{content:"今日";position:absolute;top:2px;left:4px;font-size:11px;font-weight:700;color:var(--red);background:var(--panel);padding:0 3px;border-radius:3px}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;z-index:10;align-items:end;justify-content:center}
+.scrim.on{display:flex}
+.sheet{background:var(--bg);width:min(560px,100%);border-radius:16px 16px 0 0;padding:18px 18px 22px;max-height:90vh;overflow:auto}
+.sheet h2{margin:0 0 12px;font-size:19px}
+.f{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.f label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--sub);font-weight:500}
+.f .w{grid-column:1/-1}
+.f input,.f select,.f textarea{font-size:16px;padding:8px 10px;border:1px solid var(--line2);border-radius:8px;background:var(--bg);min-height:44px}
+.f textarea{min-height:64px;resize:vertical}
+.dl{display:grid;grid-template-columns:6em minmax(0,1fr);gap:8px 12px;margin:0;font-size:15px}.dl dt{color:var(--sub);font-size:13px;padding-top:2px}.dl dd{margin:0}
+.last{font-size:13px;color:var(--sub);margin-top:8px}
+.acts{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+.del{color:var(--red);border-color:var(--red)}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 16px;border-radius:999px;font-size:14px;z-index:20;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.on{opacity:1}
+.ro{font-size:12.5px;color:var(--sub)}
+@media(max-width:600px){:root{--lw:140px}.lab .n{font-size:12.5px}.board{height:calc(100vh - 210px)}.top{padding-top:12px}}
+@media(prefers-reduced-motion:reduce){.toast{transition:none}}
+</style></head><body>
+<header class="top"><div><h1>2027年度 演舞制作ガント</h1><small>京炎そでふれ！おどりっつ・振り班用<span id="upd"></span></small></div><div class="next" id="next"></div></header>
+<div class="bar"><div id="chips" style="display:contents"></div><span class="sp"></span>
+<div class="seg" role="group" aria-label="表示の細かさ"><button type="button" id="zw">週</button><button type="button" id="zd">日</button></div>
+<button type="button" class="btn" id="goToday">今日へ</button>
+<button type="button" class="btn" id="reload">最新にする</button>
+<a class="btn pri" id="edit" href="https://docs.google.com/spreadsheets/d/1OaS35AvUApw-KOiu3SKaNI27mHpKwwfU7tmwZRp6Ers/edit" target="_blank" rel="noopener">スプレッドシートで編集</a></div>
+<div class="board" id="board"></div>
+<div class="scrim" id="scrim"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ftitle">
+<h2 id="ftitle"></h2>
+<dl class="dl" id="fdl"></dl>
+<div class="acts"><button type="button" class="btn" id="fcancel">閉じる</button></div>
+</div></div>
+<div class="toast" id="toast"></div>
+<script type="application/json" id="data">{"tasks": [{"id": "t1", "cat": "テーマ・構成", "name": "三種のフィルター", "s": "2026-11-14", "e": "2026-11-17", "st": "確定", "memo": "", "last": "11/15〜11/18"}, {"id": "t2", "cat": "テーマ・構成", "name": "テーマthinking", "s": "2026-11-18", "e": "2026-11-29", "st": "仮", "memo": "", "last": "11/19〜11/30"}, {"id": "t3", "cat": "テーマ・構成", "name": "藤原最終決定", "s": "2026-12-03", "e": "2026-12-04", "st": "目標", "memo": "", "last": ""}, {"id": "t4", "cat": "テーマ・構成", "name": "テーマ決定（振り班＋先輩相談→佐乃会議）", "s": "2026-12-05", "e": "2026-12-06", "st": "目標", "memo": "12/6までに決定（今年の目標）。決まれば衣装の方向性決定12/20まで2週間あく", "last": "12/15〜12/21"}, {"id": "t5", "cat": "テーマ・構成", "name": "かえる構成決め", "s": "2026-12-14", "e": "2026-12-24", "st": "仮", "memo": "去年の予定名「かえるストークス構成決め絶対」", "last": "12/15〜12/25"}, {"id": "t6", "cat": "テーマ・構成", "name": "ST構成決め", "s": "2027-01-02", "e": "2027-01-08", "st": "仮", "memo": "", "last": "1/3〜1/9"}, {"id": "t7", "cat": "テーマ・構成", "name": "構成大まかに決定", "s": "2027-04-06", "e": "2027-04-11", "st": "仮", "memo": "", "last": "4/7〜4/12"}, {"id": "t8", "cat": "テーマ・構成", "name": "構成対面FB", "s": "2027-04-17", "e": "2027-04-18", "st": "仮", "memo": "", "last": "4/18〜4/19"}, {"id": "t9", "cat": "テーマ・構成", "name": "演舞再構築", "s": "2027-05-11", "e": "2027-05-14", "st": "仮", "memo": "", "last": "5/12〜5/15"}, {"id": "t10", "cat": "テーマ・構成", "name": "世界観再構築＋ステージ大枠＋パレード前半", "s": "2027-07-08", "e": "2027-07-11", "st": "仮", "memo": "", "last": "7/9〜7/12"}, {"id": "t11", "cat": "テーマ・構成", "name": "パレード・ステージ仮決定", "s": "2027-07-17", "e": "2027-07-18", "st": "仮", "memo": "", "last": "7/18〜7/19"}, {"id": "t12", "cat": "テーマ・構成", "name": "ステージの大まか構成確定", "s": "2027-07-29", "e": "2027-08-01", "st": "仮", "memo": "", "last": "7/30〜8/2"}, {"id": "t13", "cat": "テーマ・構成", "name": "全体のステージ構成＋道具", "s": "2027-08-08", "e": "2027-08-09", "st": "仮", "memo": "", "last": "8/9〜8/10"}, {"id": "t14", "cat": "テーマ・構成", "name": "演舞完成", "s": "2027-09-06", "e": "2027-09-06", "st": "仮", "memo": "", "last": "9/7"}, {"id": "t15", "cat": "振り", "name": "振り制作（準特・特殊優先）＋隊列作成", "s": "2027-01-18", "e": "2027-01-24", "st": "仮", "memo": "", "last": "1/19〜1/25"}, {"id": "t16", "cat": "振り", "name": "振り制作会議", "s": "2027-01-25", "e": "2027-01-26", "st": "仮", "memo": "", "last": "1/26〜1/27"}, {"id": "t17", "cat": "振り", "name": "振り完成（1回目）", "s": "2027-02-04", "e": "2027-02-05", "st": "仮", "memo": "", "last": "2/5〜2/6"}, {"id": "t18", "cat": "振り", "name": "振り完成（2回目）", "s": "2027-03-02", "e": "2027-03-04", "st": "仮", "memo": "", "last": "3/3〜3/5"}, {"id": "t19", "cat": "振り", "name": "役職持ちに振り送る", "s": "2027-05-04", "e": "2027-05-04", "st": "仮", "memo": "", "last": "5/5"}, {"id": "t20", "cat": "振り", "name": "役職持ち絶対練", "s": "2027-05-08", "e": "2027-05-09", "st": "仮", "memo": "", "last": "5/9〜5/10"}, {"id": "t21", "cat": "振り", "name": "振り落とし", "s": "2027-05-15", "e": "2027-05-15", "st": "仮", "memo": "", "last": "5/16"}, {"id": "t22", "cat": "振り", "name": "sailingパレード構成・振り制作", "s": "2027-05-27", "e": "2027-06-03", "st": "仮", "memo": "", "last": "5/28〜6/4"}, {"id": "t23", "cat": "振り", "name": "sailingパレード作成", "s": "2027-06-07", "e": "2027-06-11", "st": "仮", "memo": "", "last": "6/8〜6/12"}, {"id": "t24", "cat": "振り", "name": "パレード（百傘繚乱＋ラスト）振り送る", "s": "2027-06-17", "e": "2027-06-18", "st": "仮", "memo": "", "last": "6/18〜6/19"}, {"id": "t25", "cat": "隊列", "name": "第1回ハコ作成", "s": "2027-01-10", "e": "2027-01-12", "st": "仮", "memo": "", "last": "1/11〜1/13"}, {"id": "t26", "cat": "隊列", "name": "隊列大枠完成", "s": "2027-01-17", "e": "2027-01-17", "st": "仮", "memo": "", "last": "1/18"}, {"id": "t27", "cat": "隊列", "name": "隊列ハコ完成＋振り修正", "s": "2027-02-06", "e": "2027-02-07", "st": "仮", "memo": "", "last": "2/7〜2/8"}, {"id": "t28", "cat": "隊列", "name": "道具隊列完成", "s": "2027-02-09", "e": "2027-02-12", "st": "仮", "memo": "", "last": "2/10〜2/13"}, {"id": "t29", "cat": "隊列", "name": "チーム内お披露目隊列作成", "s": "2027-05-03", "e": "2027-05-05", "st": "仮", "memo": "", "last": "5/4〜5/6"}, {"id": "t30", "cat": "衣装", "name": "① イメージ・方向性の決定", "s": "2026-11-20", "e": "2026-12-20", "st": "衣装班案", "memo": "テーマ決定（12/6目標）を受けて方向性を固める", "last": ""}, {"id": "t31", "cat": "衣装", "name": "◆ 方向性決定", "s": "2026-12-20", "e": "2026-12-20", "st": "衣装班案", "memo": "テーマ決定（12/6）から2週間後", "last": ""}, {"id": "t32", "cat": "衣装", "name": "② デザイン確定・データ制作（いおり屋と打ち合わせ）", "s": "2026-12-21", "e": "2027-01-10", "st": "衣装班案", "memo": "", "last": "1/14〜1/25"}, {"id": "t33", "cat": "衣装", "name": "◆ りっつ内デザイン確定", "s": "2026-12-31", "e": "2026-12-31", "st": "衣装班案", "memo": "大晦日。年末で人が集まりにくい", "last": ""}, {"id": "t34", "cat": "衣装", "name": "◆ いおり屋向けデザイン確定", "s": "2027-01-10", "e": "2027-01-10", "st": "衣装班案", "memo": "", "last": "1/31（会社に送る）"}, {"id": "t35", "cat": "衣装", "name": "③ 素材・サイズ決定", "s": "2027-01-11", "e": "2027-01-20", "st": "衣装班案", "memo": "", "last": ""}, {"id": "t36", "cat": "衣装", "name": "◆ サンプル製作開始", "s": "2027-01-20", "e": "2027-01-20", "st": "衣装班案", "memo": "衣装班が最重要とする期限", "last": ""}, {"id": "t37", "cat": "衣装", "name": "④ サンプル衣装製作（約1か月半）", "s": "2027-01-21", "e": "2027-03-05", "st": "衣装班案", "memo": "", "last": "1/31〜3/16"}, {"id": "t38", "cat": "衣装", "name": "⑤ サンプル確認・修正、最終仕様・数量確定", "s": "2027-03-06", "e": "2027-03-15", "st": "衣装班案", "memo": "", "last": "3/16〜4/10"}, {"id": "t39", "cat": "衣装", "name": "◆ 正式発注（動かさない）", "s": "2027-03-15", "e": "2027-03-15", "st": "衣装班案", "memo": "量産に約2か月。ここはなるべく動かさない", "last": "4/15〜4/20"}, {"id": "t40", "cat": "衣装", "name": "⑥ 量産・本製作（200着強、約8週間）", "s": "2027-03-16", "e": "2027-05-10", "st": "衣装班案", "memo": "衣装班は5/10頃の納品を目標（1週間の余裕）", "last": "4/20〜6/5"}, {"id": "t41", "cat": "衣装", "name": "⑦ 最終確認・納品準備", "s": "2027-05-11", "e": "2027-05-17", "st": "衣装班案", "memo": "", "last": ""}, {"id": "t42", "cat": "衣装", "name": "◆ 通常衣装 納品完了（期限）", "s": "2027-05-18", "e": "2027-05-18", "st": "衣装班案", "memo": "納品日ではなく「完了の期限」", "last": "6/5（届く）"}, {"id": "t43", "cat": "衣装", "name": "特殊衣装：コンセプト・デザイン検討", "s": "2026-12-01", "e": "2027-01-31", "st": "仮", "memo": "特殊衣装は別発注。日付は月単位の仮置き", "last": ""}, {"id": "t44", "cat": "衣装", "name": "特殊衣装：いおり屋へ製作相談・納期確認", "s": "2027-02-01", "e": "2027-02-28", "st": "仮", "memo": "", "last": ""}, {"id": "t45", "cat": "衣装", "name": "特殊衣装：デザイン・仕様確定", "s": "2027-03-01", "e": "2027-03-31", "st": "仮", "memo": "", "last": ""}, {"id": "t46", "cat": "衣装", "name": "特殊衣装：サンプル・製作", "s": "2027-03-01", "e": "2027-04-30", "st": "仮", "memo": "", "last": ""}, {"id": "t47", "cat": "衣装", "name": "特殊衣装：納品", "s": "2027-04-01", "e": "2027-05-31", "st": "仮", "memo": "数量・仕様で変わる。通常衣装と別に納期相談", "last": ""}, {"id": "t48", "cat": "特殊・準特", "name": "特殊表明締切", "s": "2027-01-20", "e": "2027-01-20", "st": "仮", "memo": "", "last": "1/21"}, {"id": "t49", "cat": "特殊・準特", "name": "特殊募集締切", "s": "2027-01-24", "e": "2027-01-24", "st": "仮", "memo": "", "last": "1/25"}, {"id": "t50", "cat": "特殊・準特", "name": "準特発表", "s": "2027-02-08", "e": "2027-02-08", "st": "仮", "memo": "", "last": "2/9"}, {"id": "t51", "cat": "特殊・準特", "name": "特殊動画撮影", "s": "2027-02-19", "e": "2027-02-19", "st": "仮", "memo": "", "last": "2/20"}, {"id": "t52", "cat": "特殊・準特", "name": "特殊表明", "s": "2027-02-20", "e": "2027-02-22", "st": "仮", "memo": "", "last": "2/21〜2/23"}, {"id": "t53", "cat": "特殊・準特", "name": "特殊応募", "s": "2027-02-25", "e": "2027-03-02", "st": "仮", "memo": "", "last": "2/26〜3/3"}, {"id": "t54", "cat": "特殊・準特", "name": "特殊発表", "s": "2027-05-14", "e": "2027-05-14", "st": "仮", "memo": "", "last": "5/15"}, {"id": "t55", "cat": "特殊・準特", "name": "特殊表明（sailing）", "s": "2027-05-26", "e": "2027-05-29", "st": "仮", "memo": "", "last": "5/27〜5/30"}, {"id": "t56", "cat": "特殊・準特", "name": "特殊表明（夏）", "s": "2027-07-11", "e": "2027-07-15", "st": "仮", "memo": "", "last": "7/12〜7/16"}, {"id": "t57", "cat": "特殊・準特", "name": "特殊動画〆切", "s": "2027-07-16", "e": "2027-07-19", "st": "仮", "memo": "", "last": "7/17〜7/20"}, {"id": "t58", "cat": "特殊・準特", "name": "特殊応募（夏）", "s": "2027-08-20", "e": "2027-08-24", "st": "仮", "memo": "", "last": "8/21〜8/25"}, {"id": "t59", "cat": "本番・行事", "name": "あきのどまつり", "s": "2026-11-28", "e": "2026-11-28", "st": "確定", "memo": "2026/11/28・29", "last": "11/29"}, {"id": "t60", "cat": "本番・行事", "name": "かえるまつり", "s": "2027-03-07", "e": "2027-03-07", "st": "仮", "memo": "", "last": "2/28(ストークス)"}, {"id": "t61", "cat": "本番・行事", "name": "さくよさ", "s": "2027-04-03", "e": "2027-04-04", "st": "確定", "memo": "", "last": "4/4〜4/5"}, {"id": "t62", "cat": "本番・行事", "name": "新演舞発表", "s": "2027-04-10", "e": "2027-04-10", "st": "仮", "memo": "さのけんの曲は3月29とかにくる。そこから新演舞宣伝用MV作成", "last": "4/11"}, {"id": "t63", "cat": "本番・行事", "name": "お披露目", "s": "2027-05-10", "e": "2027-05-10", "st": "仮", "memo": "", "last": "5/11"}, {"id": "t64", "cat": "本番・行事", "name": "犬山", "s": "2027-06-06", "e": "2027-06-06", "st": "確定", "memo": "", "last": "6/7"}, {"id": "t65", "cat": "本番・行事", "name": "sailing神戸", "s": "2027-07-03", "e": "2027-07-03", "st": "仮", "memo": "", "last": "7/4"}, {"id": "t66", "cat": "本番・行事", "name": "夏合宿", "s": "2027-08-06", "e": "2027-08-08", "st": "仮", "memo": "", "last": "8/7〜8/9"}, {"id": "t67", "cat": "本番・行事", "name": "にっぽんど真ん中祭り", "s": "2027-08-27", "e": "2027-08-30", "st": "仮", "memo": "", "last": "8/28〜8/31"}, {"id": "t68", "cat": "本番・行事", "name": "こいや祭り", "s": "2027-09-11", "e": "2027-09-12", "st": "仮", "memo": "", "last": "9/12〜9/13"}, {"id": "t69", "cat": "本番・行事", "name": "役職選挙", "s": "2027-09-25", "e": "2027-09-25", "st": "仮", "memo": "", "last": "9/26"}], "prev": null, "updated": ""}</script>
+<script>{
+const $=s=>document.querySelector(s);
+const esc=v=>String(v==null?'':v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const SHEET='1OaS35AvUApw-KOiu3SKaNI27mHpKwwfU7tmwZRp6Ers';
+const CSV_URL='https://docs.google.com/spreadsheets/d/'+SHEET+'/gviz/tq?tqx=out:csv&headers=1';
+const SNAP=JSON.parse(document.getElementById('data').textContent);
+let TASKS=SNAP.tasks,SRC='snap';
+const CATS=[["テーマ・構成","#D9950F"],["振り","#2F80C9"],["隊列","#1E9E8E"],["衣装","#E0606E"],["特殊・準特","#7E6BC4"],["本番・行事","#B5122E"]];
+const OTHER="#6d6266";
+const DAY=864e5;
+function toN(s){
+  s=String(s||'').trim();let m=s.match(/^(\d{4})[-\/年.](\d{1,2})[-\/月.](\d{1,2})/);
+  if(m)return Math.round(Date.UTC(+m[1],m[2]-1,+m[3])/DAY);
+  m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);if(m)return Math.round(Date.UTC(+m[3],m[1]-1,+m[2])/DAY);
+  return NaN}
+const md=n=>{const d=new Date(n*DAY);return (d.getUTCMonth()+1)+'/'+d.getUTCDate()+'('+'日月火水木金土'[d.getUTCDay()]+')'};
+const now=new Date();const TODAY=Math.round(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate())/DAY);
+let pxd=8,hidden=new Set(),first=true;
+try{pxd=+localStorage.getItem('odo-pxd')||8;hidden=new Set(JSON.parse(localStorage.getItem('odo-hide')||'[]'))}catch(e){}
+const board=$('#board');
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('on'),2400)}
+function parseCSV(text){
+  const rows=[];let row=[],f='',q=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){f+='"';i++}else q=false}else f+=c}
+    else if(c==='"')q=true;else if(c===','){row.push(f);f=''}
+    else if(c==='\n'||c==='\r'){if(c==='\r'&&text[i+1]==='\n')i++;row.push(f);rows.push(row);row=[];f=''}
+    else f+=c}
+  if(f!==''||row.length){row.push(f);rows.push(row)}
+  return rows}
+function fromRows(rows){
+  const h=rows[0].map(x=>x.trim());const ix=k=>h.indexOf(k);
+  const iC=ix('カテゴリ'),iN=ix('タスク'),iS=ix('開始'),iE=ix('終了'),iT=ix('状態'),iM=ix('メモ'),iL=ix('去年の実績');
+  if(iN<0||iS<0)throw new Error('列名が見つかりません');
+  const out=[];
+  rows.slice(1).forEach((r,k)=>{const name=(r[iN]||'').trim();const s=toN(r[iS]);let e=iE<0?s:toN(r[iE]);
+    if(!name||isNaN(s))return;if(isNaN(e)||e<s)e=s;
+    out.push({id:'r'+k,cat:(r[iC]||'').trim()||'その他',name,s,e,st:(r[iT]||'').trim()||'仮',memo:(r[iM]||'').trim(),last:iL<0?'':(r[iL]||'').trim()})});
+  return out}
+function normSnap(){return SNAP.tasks.map(t=>Object.assign({},t,{s:toN(t.s),e:toN(t.e)}))}
+TASKS=normSnap();
+async function load(manual){
+  try{const r=await fetch(CSV_URL+'&_='+Date.now(),{cache:'no-store'});if(!r.ok)throw new Error(r.status);
+    const txt=await r.text();if(/^\s*</.test(txt))throw new Error('html');
+    const t=fromRows(parseCSV(txt));if(!t.length)throw new Error('empty');
+    TASKS=t;SRC='live';render();if(manual)toast('最新の予定を読み込みました')}
+  catch(e){SRC='snap';render();if(manual)toast('スプレッドシートを読み込めませんでした')}}
+function cats(){const list=CATS.slice();for(const t of TASKS)if(!list.some(c=>c[0]===t.cat))list.push([t.cat,OTHER]);return list}
+function range(){let a=TODAY,b=TODAY;for(const t of TASKS){a=Math.min(a,t.s);b=Math.max(b,t.e)}a-=7;a-=((new Date(a*DAY).getUTCDay()+6)%7);return[a,b+28]}
+const isMs=t=>t.s===t.e;
+function render(){
+ const C=cats();const[base,end]=range();const W=(end-base)*pxd;
+ $('#upd').textContent=SRC==='live'?'・スプレッドシートの最新版':'・保存済みの版を表示中';
+ const up=TASKS.filter(t=>t.st!=='完了'&&(t.name.startsWith('◆')||t.st==='目標'||isMs(t))&&t.e>=TODAY).sort((x,y)=>x.e-y.e)[0];
+ $('#next').innerHTML=up?'次の締切　<b>'+esc(up.name.replace(/^◆\s*/,''))+'</b>　'+md(up.e)+'　あと'+(up.e-TODAY)+'日':'締切はありません';
+ $('#chips').innerHTML=C.map(([c,k])=>'<button type="button" class="chip'+(hidden.has(c)?' off':'')+'" style="--c:'+k+'" data-c="'+esc(c)+'" aria-pressed="'+!hidden.has(c)+'">'+esc(c)+'</button>').join('');
+ $('#zw').classList.toggle('on',pxd<14);$('#zd').classList.toggle('on',pxd>=14);
+ let h='',months='',weeks='';
+ for(let n=base;n<end;n++){const d=new Date(n*DAY);
+  if(d.getUTCDate()===1||n===base){const y=d.getUTCFullYear(),m=d.getUTCMonth()+1;months+='<span class="mo" style="left:'+(n-base)*pxd+'px">'+((m===1||n===base)?y+'年':'')+m+'月</span>'}
+  if(d.getUTCDay()===1)weeks+='<span class="wk" style="left:'+(n-base)*pxd+'px">'+d.getUTCDate()+'</span>'}
+ h+='<div class="row head"><div class="lab">タスク</div><div class="tl" style="width:'+W+'px">'+months+weeks+'</div></div>';
+ for(const[c,k]of C){if(hidden.has(c))continue;
+  const ts=TASKS.filter(t=>t.cat===c).sort((x,y)=>x.s-y.s||x.e-y.e);if(!ts.length)continue;
+  h+='<div class="row grp" style="--c:'+k+'"><div class="lab">'+esc(c)+'　'+ts.length+'件</div><div class="tl" style="width:'+W+'px"></div></div>';
+  for(const t of ts){const x=(t.s-base)*pxd,len=(t.e-t.s+1)*pxd;
+   const shape=isMs(t)?'<span class="dm" data-id="'+esc(t.id)+'" style="left:'+(x+pxd/2-7)+'px" title="'+esc(t.name)+'"></span>'
+    :'<span class="bk'+(t.st==='完了'?' done':'')+'" data-id="'+esc(t.id)+'" style="left:'+x+'px;width:'+Math.max(len,6)+'px" title="'+esc(t.name)+'">'+(len>70?esc(t.name.replace(/^◆\s*/,'')):'')+'</span>';
+   h+='<div class="row'+(t.name.startsWith('◆')?' ms':'')+'" style="--c:'+k+'"><div class="lab" tabindex="0" role="button" data-id="'+esc(t.id)+'"><span class="n">'+(t.st==='完了'?'✓ ':'')+esc(t.name)+'</span><span class="d">'+md(t.s)+(isMs(t)?'':'〜'+md(t.e))+'<span class="badge b-'+esc(t.st)+'">'+esc(t.st)+'</span></span></div><div class="tl" style="width:'+W+'px">'+shape+'</div></div>'}}
+ const lw=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lw'))||250;
+ const keep=board.scrollLeft;
+ board.innerHTML=h+'<div class="today" style="left:'+(lw+(TODAY-base)*pxd+pxd/2)+'px"></div>';
+ board.style.setProperty('--wk',7*pxd+'px');board.style.setProperty('--pd',pxd+'px');board.classList.toggle('day',pxd>=14);
+ board.querySelector('.today').style.height=board.scrollHeight+'px';
+ if(first){first=false;goToday()}else board.scrollLeft=keep;
+}
+function goToday(){const[base]=range();board.scrollLeft=Math.max(0,(TODAY-base-14)*pxd)}
+function save(){try{localStorage.setItem('odo-pxd',pxd);localStorage.setItem('odo-hide',JSON.stringify([...hidden]))}catch(e){}}
+function openInfo(id){const t=TASKS.find(x=>x.id===id);if(!t)return;
+ $('#ftitle').textContent=t.name;
+ const rows=[['カテゴリ',t.cat],['日程',md(t.s)+(isMs(t)?'':' 〜 '+md(t.e))+(t.e>=TODAY&&t.s>TODAY?'（あと'+(t.s-TODAY)+'日）':'')],['状態',t.st],['メモ',t.memo||'—'],['去年',t.last||'—']];
+ $('#fdl').innerHTML=rows.map(([a,b])=>'<dt>'+esc(a)+'</dt><dd>'+esc(b)+'</dd>').join('');
+ $('#scrim').classList.add('on');$('#fcancel').focus()}
+function closeInfo(){$('#scrim').classList.remove('on')}
+$('#fcancel').addEventListener('click',closeInfo);
+$('#scrim').addEventListener('click',e=>{if(e.target.id==='scrim')closeInfo()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeInfo()});
+$('#zw').addEventListener('click',()=>{pxd=8;save();first=true;render()});
+$('#zd').addEventListener('click',()=>{pxd=24;save();first=true;render()});
+$('#goToday').addEventListener('click',goToday);
+$('#reload').addEventListener('click',()=>load(true));
+$('#chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;const c=b.dataset.c;hidden.has(c)?hidden.delete(c):hidden.add(c);save();render()});
+board.addEventListener('click',e=>{const el=e.target.closest('[data-id]');if(el)openInfo(el.dataset.id)});
+board.addEventListener('keydown',e=>{if(e.key==='Enter'){const el=e.target.closest('.lab[data-id]');if(el)openInfo(el.dataset.id)}});
+window.addEventListener('resize',()=>{clearTimeout(window._r);window._r=setTimeout(render,150)});
+render();load(false);
+}
+</script>
+</body></html>
